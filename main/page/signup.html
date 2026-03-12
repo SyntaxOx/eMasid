@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>eMASID — Create Account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-deep:   #0d3320;
+      --green-mid:    #16522e;
+      --green-light:  #1f7a43;
+      --gold:         #e8b94f;
+      --gold-light:   #f5d27a;
+      --cream:        #faf7f0;
+      --text-light:   #c8e6d0;
+      --text-muted:   #7aab8a;
+      --red-alert:    #e05252;
+      --green-ok:     #16a34a;
+      --white:        #ffffff;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: var(--green-deep);
+      overflow: hidden;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      flex: 0 0 380px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 56px 52px;
+      overflow: hidden;
+    }
+    .left-panel::before,
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(232,185,79,.12);
+      pointer-events: none;
+    }
+    .left-panel::before { width: 600px; height: 600px; top: -200px; left: -200px; }
+    .left-panel::after  { width: 380px; height: 380px; bottom: -60px; left: 40px; }
+    .ring-extra {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(232,185,79,.07);
+      width: 460px; height: 460px;
+      top: 60px; left: -120px; pointer-events: none;
+    }
+    .dot-grid {
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(232,185,79,.18) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 70% 80% at 30% 50%, black 20%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 80% at 30% 50%, black 20%, transparent 80%);
+    }
+
+    .brand-icon { position: relative; width: 64px; height: 64px; margin-bottom: 28px; animation: fadeUp .8s ease both; }
+    .brand-icon svg { width: 100%; height: 100%; }
+    .brand-title {
+      position: relative;
+      font-family: 'Playfair Display', serif;
+      font-size: 3.6rem; font-weight: 900;
+      line-height: 1; color: var(--white); letter-spacing: -1px;
+      animation: fadeUp .85s .08s ease both;
+    }
+    .brand-title span { color: var(--gold); }
+    .brand-tagline {
+      position: relative; margin-top: 14px;
+      font-size: .82rem; font-weight: 300;
+      color: var(--text-light); letter-spacing: .06em; text-transform: uppercase;
+      animation: fadeUp .85s .16s ease both;
+    }
+    .brand-desc {
+      position: relative; margin-top: 28px; max-width: 300px;
+      font-size: .95rem; font-weight: 300; color: var(--text-muted); line-height: 1.75;
+      animation: fadeUp .85s .24s ease both;
+    }
+
+    /* step progress on left */
+    .step-progress { position: relative; margin-top: 48px; display: flex; flex-direction: column; gap: 0; animation: fadeUp .85s .32s ease both; }
+    .step-item { display: flex; align-items: flex-start; gap: 14px; position: relative; }
+    .step-item:not(:last-child)::after {
+      content: ''; position: absolute;
+      left: 15px; top: 34px;
+      width: 1px; height: 36px;
+      background: rgba(232,185,79,.2);
+    }
+    .step-dot {
+      flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+      border: 1.5px solid rgba(232,185,79,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 600; color: var(--text-muted);
+      transition: all .3s; margin-top: 8px;
+    }
+    .step-dot.active { border-color: var(--gold); color: var(--gold); background: rgba(232,185,79,.1); box-shadow: 0 0 0 4px rgba(232,185,79,.08); }
+    .step-dot.done { border-color: var(--green-ok); background: var(--green-ok); color: #fff; }
+    .step-info { padding: 8px 0 24px; }
+    .step-info strong { display: block; font-size: .82rem; font-weight: 600; color: var(--text-light); margin-bottom: 2px; transition: color .3s; }
+    .step-info span { font-size: .75rem; color: var(--text-muted); }
+    .step-item.active .step-info strong { color: var(--gold); }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      flex: 1;
+      background: var(--cream);
+      display: flex; flex-direction: column;
+      overflow: hidden; position: relative;
+    }
+    .right-panel::before {
+      content: ''; position: absolute;
+      top: -80px; right: -80px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(22,82,46,.09), transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* top bar */
+    .form-topbar {
+      padding: 28px 64px 0;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; position: relative; z-index: 1;
+    }
+    .form-topbar .step-label {
+      font-size: .75rem; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--green-light);
+    }
+    .login-ref { font-size: .82rem; color: #5a7a65; }
+    .login-ref a { color: var(--green-light); font-weight: 600; text-decoration: none; }
+    .login-ref a:hover { color: var(--green-deep); }
+
+    /* progress bar */
+    .progress-bar-wrap {
+      padding: 18px 64px 0; flex-shrink: 0; position: relative; z-index: 1;
+    }
+    .progress-bar-track {
+      height: 4px; background: #dde8e1; border-radius: 4px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; background: linear-gradient(90deg, var(--green-light), var(--gold));
+      border-radius: 4px; transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* scrollable content */
+    .form-scroll {
+      flex: 1; overflow-y: auto; padding: 32px 64px 48px;
+      position: relative; z-index: 1;
+    }
+    .form-scroll::-webkit-scrollbar { width: 6px; }
+    .form-scroll::-webkit-scrollbar-track { background: transparent; }
+    .form-scroll::-webkit-scrollbar-thumb { background: #c8ddd0; border-radius: 3px; }
+
+    /* step panels */
+    .step-panel { display: none; animation: fadeRight .5s ease both; }
+    .step-panel.active { display: block; }
+
+    .step-header { margin-bottom: 32px; }
+    .step-header p {
+      font-size: .78rem; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--green-light); margin-bottom: 8px;
+    }
+    .step-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.1rem; font-weight: 700;
+      color: var(--green-deep); line-height: 1.2;
+    }
+    .step-header .sub { font-size: .9rem; color: #7aab8a; margin-top: 6px; font-weight: 300; }
+
+    /* fields */
+    .field-row { display: grid; gap: 18px; margin-bottom: 18px; }
+    .field-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .field-row.cols-1 { grid-template-columns: 1fr; }
+
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field label {
+      font-size: .78rem; font-weight: 600; color: var(--green-deep);
+      letter-spacing: .04em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .field label .opt {
+      font-size: .68rem; font-weight: 400; color: #9ab5a2;
+      text-transform: none; letter-spacing: 0;
+    }
+
+    .input-wrap { position: relative; }
+    .input-wrap .icon {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%);
+      width: 17px; height: 17px; color: var(--text-muted);
+      transition: color .2s; pointer-events: none;
+    }
+    .input-wrap input,
+    .input-wrap select {
+      width: 100%;
+      padding: 13px 14px 13px 42px;
+      background: #ffffff;
+      border: 1.5px solid #dde8e1; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: .92rem;
+      color: var(--green-deep); outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      appearance: none;
+    }
+    .input-wrap input::placeholder { color: #b0c4b8; }
+    .input-wrap input:focus,
+    .input-wrap select:focus {
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 4px rgba(31,122,67,.1);
+    }
+    .input-wrap input:focus ~ .icon,
+    .input-wrap select:focus ~ .icon { color: var(--green-light); }
+    .input-wrap input.error { border-color: var(--red-alert); }
+    .input-wrap input.ok { border-color: var(--green-ok); }
+
+    /* no-icon inputs */
+    .input-wrap.no-icon input,
+    .input-wrap.no-icon select { padding-left: 14px; }
+
+    /* phone row */
+    .phone-group { display: flex; gap: 0; }
+    .phone-prefix {
+      padding: 13px 12px; background: #f0f5f2;
+      border: 1.5px solid #dde8e1; border-right: none;
+      border-radius: 10px 0 0 10px;
+      font-size: .92rem; color: var(--green-mid); font-weight: 500;
+      display: flex; align-items: center; white-space: nowrap;
+    }
+    .phone-group .input-wrap { flex: 1; }
+    .phone-group .input-wrap input { border-radius: 0 10px 10px 0; }
+
+    /* password strength */
+    .pw-strength { margin-top: 8px; }
+    .pw-strength-bar { height: 4px; background: #dde8e1; border-radius: 4px; overflow: hidden; }
+    .pw-strength-fill { height: 100%; border-radius: 4px; width: 0; transition: width .3s, background .3s; }
+    .pw-strength-text { font-size: .72rem; color: #9ab5a2; margin-top: 4px; }
+
+    .toggle-pw-btn {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); display: flex; align-items: center;
+      transition: color .2s; padding: 2px;
+    }
+    .toggle-pw-btn:hover { color: var(--green-light); }
+
+    /* field error */
+    .field-error {
+      font-size: .75rem; color: var(--red-alert);
+      display: none; align-items: center; gap: 4px; margin-top: 2px;
+    }
+    .field-error.show { display: flex; }
+
+    /* map section */
+    .map-section { margin-top: 6px; }
+    .map-container {
+      height: 260px; border-radius: 12px;
+      border: 1.5px solid #dde8e1; overflow: hidden;
+      transition: border-color .2s;
+    }
+    .map-container:focus-within { border-color: var(--green-light); }
+    #map { width: 100%; height: 100%; }
+    .map-hint {
+      font-size: .76rem; color: #9ab5a2;
+      margin-top: 7px; display: flex; align-items: center; gap: 5px;
+    }
+
+    /* address suggestion dropdown */
+    .address-suggestions {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: #fff; border: 1.5px solid #dde8e1;
+      border-radius: 10px; box-shadow: 0 8px 24px rgba(13,51,32,.1);
+      z-index: 999; max-height: 200px; overflow-y: auto; display: none;
+    }
+    .address-suggestions.show { display: block; }
+    .suggestion-item {
+      padding: 10px 14px; font-size: .86rem; color: var(--green-deep);
+      cursor: pointer; transition: background .15s; border-bottom: 1px solid #f0f5f2;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: #f0f9f4; }
+
+    /* ── Verification step ── */
+    .verify-card {
+      max-width: 460px; margin: 0 auto;
+      background: #fff; border: 1.5px solid #dde8e1;
+      border-radius: 16px; padding: 36px 40px; text-align: center;
+    }
+    .verify-icon {
+      width: 72px; height: 72px; margin: 0 auto 20px;
+      background: linear-gradient(135deg, #e8f5ee, #d4eddf);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+    .verify-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; color: var(--green-deep); margin-bottom: 8px;
+    }
+    .verify-card p { font-size: .9rem; color: #7aab8a; line-height: 1.6; margin-bottom: 28px; }
+    .verify-card .email-highlight { color: var(--green-deep); font-weight: 600; }
+
+    .otp-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; }
+    .otp-input {
+      width: 52px; height: 58px; text-align: center;
+      border: 1.5px solid #dde8e1; border-radius: 10px;
+      font-size: 1.4rem; font-weight: 700; color: var(--green-deep);
+      font-family: 'DM Sans', sans-serif; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .otp-input:focus { border-color: var(--green-light); box-shadow: 0 0 0 4px rgba(31,122,67,.1); }
+    .otp-input.filled { border-color: var(--green-light); background: #f0f9f4; }
+
+    .resend-row { font-size: .82rem; color: #9ab5a2; }
+    .resend-row button {
+      background: none; border: none; cursor: pointer;
+      color: var(--green-light); font-weight: 600; font-size: .82rem;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .resend-row button:disabled { color: #9ab5a2; cursor: default; }
+
+    /* demo OTP box */
+    .demo-otp-box {
+      background: #fffbec; border: 1px solid #f5d27a;
+      border-radius: 8px; padding: 10px 16px; margin-bottom: 20px;
+      font-size: .82rem; color: #8a6a00;
+    }
+    .demo-otp-box strong { color: #6a4f00; }
+
+    /* success */
+    .success-card {
+      max-width: 460px; margin: 0 auto; text-align: center;
+    }
+    .success-anim {
+      width: 90px; height: 90px; margin: 0 auto 24px;
+      background: linear-gradient(135deg, var(--green-mid), var(--green-light));
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      animation: popIn .5s cubic-bezier(.175,.885,.32,1.275) both;
+    }
+    @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .success-card h3 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--green-deep); margin-bottom: 10px; }
+    .success-card p { font-size: .95rem; color: #7aab8a; line-height: 1.7; margin-bottom: 30px; }
+
+    /* buttons */
+    .btn-primary {
+      width: 100%; padding: 15px; background: var(--green-deep);
+      color: var(--white); border: none; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: .98rem;
+      font-weight: 600; letter-spacing: .04em; cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: transform .15s, box-shadow .2s;
+    }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+      opacity: 0; transition: opacity .2s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(13,51,32,.25); }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary span, .btn-primary svg { position: relative; z-index: 1; }
+    .btn-primary .btn-arrow { display: inline-block; margin-left: 8px; transition: transform .2s; position: relative; z-index: 1; }
+    .btn-primary:hover .btn-arrow { transform: translateX(5px); }
+
+    .btn-primary.loading span, .btn-primary.loading .btn-arrow { opacity: 0; }
+    .btn-primary.loading::after {
+      content: ''; position: absolute;
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff;
+      border-radius: 50%; left: 50%; top: 50%;
+      transform: translate(-50%,-50%); animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+    .btn-secondary {
+      padding: 13px 22px; background: transparent;
+      border: 1.5px solid #dde8e1; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: .9rem;
+      font-weight: 500; color: #5a7a65; cursor: pointer;
+      transition: background .2s, border-color .2s;
+    }
+    .btn-secondary:hover { background: #f0f9f4; border-color: var(--green-light); color: var(--green-mid); }
+
+    .btn-row { display: flex; gap: 12px; margin-top: 28px; align-items: center; }
+    .btn-row .btn-primary { flex: 1; }
+
+    /* alert */
+    .alert {
+      display: none; align-items: center; gap: 10px;
+      padding: 12px 16px; background: #fdeaea;
+      border: 1px solid #f5c5c5; border-radius: 8px;
+      font-size: .85rem; color: var(--red-alert); margin-bottom: 18px;
+    }
+    .alert.show { display: flex; }
+    .alert.success { background: #e8f5ee; border-color: #a7d9b8; color: var(--green-ok); }
+
+    /* checkbox */
+    .check-field { display: flex; align-items: flex-start; gap: 10px; margin-top: 4px; }
+    .check-field input[type=checkbox] {
+      appearance: none; flex-shrink: 0;
+      width: 17px; height: 17px; margin-top: 2px;
+      border: 1.5px solid #b0c4b8; border-radius: 4px;
+      cursor: pointer; position: relative; transition: background .15s, border-color .15s;
+    }
+    .check-field input[type=checkbox]:checked { background: var(--green-light); border-color: var(--green-light); }
+    .check-field input[type=checkbox]:checked::after {
+      content: ''; position: absolute;
+      left: 4px; top: 1px; width: 5px; height: 9px;
+      border: 2px solid #fff; border-left: none; border-top: none; transform: rotate(45deg);
+    }
+    .check-field label { font-size: .83rem; color: #5a7a65; line-height: 1.5; cursor: pointer; }
+    .check-field label a { color: var(--green-light); text-decoration: none; }
+    .check-field label a:hover { text-decoration: underline; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1000px) {
+      .left-panel { flex: 0 0 300px; padding: 48px 36px; }
+      .form-topbar { padding: 28px 40px 0; }
+      .progress-bar-wrap { padding: 18px 40px 0; }
+      .form-scroll { padding: 28px 40px 40px; }
+    }
+    @media (max-width: 780px) {
+      body { flex-direction: column; overflow: auto; }
+      .left-panel { flex: none; padding: 40px 28px 32px; }
+      .step-progress { display: none; }
+      .brand-title { font-size: 2.8rem; }
+      .right-panel { flex: none; min-height: 100vh; }
+      .form-topbar { padding: 24px 24px 0; }
+      .progress-bar-wrap { padding: 14px 24px 0; }
+      .form-scroll { padding: 24px 24px 40px; }
+      .field-row.cols-3 { grid-template-columns: 1fr; }
+      .field-row.cols-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <div class="dot-grid"></div>
+  <div class="ring-extra"></div>
+
+  <div class="brand-icon">
+    <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="36" r="35" stroke="rgba(232,185,79,.25)" stroke-width="1"/>
+      <path d="M10 36C10 36 20 16 36 16C52 16 62 36 62 36C62 36 52 56 36 56C20 56 10 36 10 36Z" stroke="#e8b94f" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <circle cx="36" cy="36" r="10" stroke="#e8b94f" stroke-width="2"/>
+      <circle cx="36" cy="36" r="4" fill="#e8b94f"/>
+      <line x1="10" y1="36" x2="26" y2="36" stroke="rgba(232,185,79,.3)" stroke-width="1"/>
+      <line x1="46" y1="36" x2="62" y2="36" stroke="rgba(232,185,79,.3)" stroke-width="1"/>
+      <line x1="36" y1="16" x2="36" y2="26" stroke="rgba(232,185,79,.3)" stroke-width="1"/>
+      <line x1="36" y1="46" x2="36" y2="56" stroke="rgba(232,185,79,.3)" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <h1 class="brand-title">e<span>MASID</span></h1>
+  <p class="brand-tagline">Electronic Community Observation System</p>
+  <p class="brand-desc">Join your community, report local issues, and help build a more transparent and responsive barangay.</p>
+
+  <div class="step-progress">
+    <div class="step-item active" id="sp1">
+      <div class="step-dot active" id="sd1">1</div>
+      <div class="step-info">
+        <strong>Personal Info</strong>
+        <span>Your full name</span>
+      </div>
+    </div>
+    <div class="step-item" id="sp2">
+      <div class="step-dot" id="sd2">2</div>
+      <div class="step-info">
+        <strong>Your Address</strong>
+        <span>Locate on map</span>
+      </div>
+    </div>
+    <div class="step-item" id="sp3">
+      <div class="step-dot" id="sd3">3</div>
+      <div class="step-info">
+        <strong>Account Details</strong>
+        <span>Email & password</span>
+      </div>
+    </div>
+    <div class="step-item" id="sp4">
+      <div class="step-dot" id="sd4">4</div>
+      <div class="step-info">
+        <strong>Verification</strong>
+        <span>Confirm your email</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="form-topbar">
+    <span class="step-label" id="stepLabel">Step 1 of 4</span>
+    <span class="login-ref">Already have an account? <a href="login.html">Log In</a></span>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill" style="width:25%"></div>
+    </div>
+  </div>
+
+  <div class="form-scroll">
+
+    <!-- ─── STEP 1: PERSONAL INFO ─── -->
+    <div class="step-panel active" id="step1">
+      <div class="step-header">
+        <p>Step 1 — Personal Information</p>
+        <h2>What's your<br/>full name?</h2>
+        <div class="sub">Enter your name exactly as it appears on your valid ID.</div>
+      </div>
+
+      <div id="alertStep1" class="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="alertMsgStep1"></span>
+      </div>
+
+      <div class="field-row cols-2">
+        <div class="field">
+          <label for="firstName">Given Name</label>
+          <div class="input-wrap">
+            <input type="text" id="firstName" placeholder="e.g. Juan" autocomplete="given-name"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+        </div>
+        <div class="field">
+          <label for="lastName">Last Name</label>
+          <div class="input-wrap">
+            <input type="text" id="lastName" placeholder="e.g. Dela Cruz" autocomplete="family-name"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row cols-1">
+        <div class="field">
+          <label for="middleName">Middle Name <span class="opt">(optional)</span></label>
+          <div class="input-wrap">
+            <input type="text" id="middleName" placeholder="e.g. Santos" autocomplete="additional-name"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row cols-2">
+        <div class="field">
+          <label for="birthdate">Date of Birth</label>
+          <div class="input-wrap">
+            <input type="date" id="birthdate" autocomplete="bday"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+        </div>
+        <div class="field">
+          <label for="gender">Gender</label>
+          <div class="input-wrap">
+            <select id="gender">
+              <option value="" disabled selected>Select gender</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Non-binary</option>
+              <option>Prefer not to say</option>
+            </select>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="goStep(2)">
+          <span>Continue</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 2: ADDRESS + MAP ─── -->
+    <div class="step-panel" id="step2">
+      <div class="step-header">
+        <p>Step 2 — Your Location</p>
+        <h2>Where do you<br/>live?</h2>
+        <div class="sub">Your address helps us connect you to the right barangay community.</div>
+      </div>
+
+      <div id="alertStep2" class="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="alertMsgStep2"></span>
+      </div>
+
+      <div class="field-row cols-1">
+        <div class="field">
+          <label for="addressSearch">Search your address</label>
+          <div class="input-wrap" style="position:relative">
+            <input type="text" id="addressSearch" placeholder="Type your street, barangay, city…" autocomplete="off" oninput="onAddressInput()" onfocus="showSuggestions()"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <div class="address-suggestions" id="addressSuggestions"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-section">
+        <div class="map-container" id="mapContainer">
+          <div id="map"></div>
+        </div>
+        <div class="map-hint">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          You can also drag the pin to fine-tune your exact location.
+        </div>
+      </div>
+
+      <div class="field-row cols-2" style="margin-top:18px">
+        <div class="field">
+          <label for="barangay">Barangay</label>
+          <div class="input-wrap">
+            <input type="text" id="barangay" placeholder="e.g. Barangay 1" autocomplete="off"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+        </div>
+        <div class="field">
+          <label for="cityMuni">City / Municipality</label>
+          <div class="input-wrap">
+            <input type="text" id="cityMuni" placeholder="e.g. Quezon City"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row cols-2">
+        <div class="field">
+          <label for="province">Province</label>
+          <div class="input-wrap">
+            <input type="text" id="province" placeholder="e.g. Metro Manila"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          </div>
+        </div>
+        <div class="field">
+          <label for="zipCode">ZIP Code</label>
+          <div class="input-wrap">
+            <input type="text" id="zipCode" placeholder="e.g. 1100" maxlength="4"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="10" y1="14" x2="10" y2="18"/><line x1="14" y1="14" x2="14" y2="18"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(1)">← Back</button>
+        <button class="btn-primary" onclick="goStep(3)">
+          <span>Continue</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 3: ACCOUNT DETAILS ─── -->
+    <div class="step-panel" id="step3">
+      <div class="step-header">
+        <p>Step 3 — Account Details</p>
+        <h2>Set up your<br/>account.</h2>
+        <div class="sub">We'll send a verification code to your email address.</div>
+      </div>
+
+      <div id="alertStep3" class="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="alertMsgStep3"></span>
+      </div>
+
+      <div class="field-row cols-1">
+        <div class="field">
+          <label for="emailAddr">Email Address</label>
+          <div class="input-wrap">
+            <input type="email" id="emailAddr" placeholder="juan.delacruz@email.com" autocomplete="email"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row cols-1">
+        <div class="field">
+          <label for="phoneNum">Phone Number</label>
+          <div class="phone-group">
+            <span class="phone-prefix">🇵🇭 +63</span>
+            <div class="input-wrap">
+              <input type="tel" id="phoneNum" placeholder="9XX XXX XXXX" maxlength="10" autocomplete="tel"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row cols-1">
+        <div class="field">
+          <label for="password1">Password</label>
+          <div class="input-wrap">
+            <input type="password" id="password1" placeholder="Create a strong password" autocomplete="new-password" oninput="checkStrength()"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <button class="toggle-pw-btn" type="button" onclick="togglePw('password1','eye1')">
+              <svg id="eye1" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pw-strength">
+            <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwFill"></div></div>
+            <div class="pw-strength-text" id="pwText">Enter a password</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row cols-1">
+        <div class="field">
+          <label for="password2">Confirm Password</label>
+          <div class="input-wrap">
+            <input type="password" id="password2" placeholder="Re-enter your password" autocomplete="new-password"/>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <button class="toggle-pw-btn" type="button" onclick="togglePw('password2','eye2')">
+              <svg id="eye2" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row cols-1">
+        <div class="check-field">
+          <input type="checkbox" id="agreeTerms"/>
+          <label for="agreeTerms">I agree to eMASID's <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>. My data will be used to improve community services in my barangay.</label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(2)">← Back</button>
+        <button class="btn-primary" id="createAccBtn" onclick="handleCreateAccount()">
+          <span>Create Account</span>
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 4: EMAIL VERIFICATION ─── -->
+    <div class="step-panel" id="step4">
+      <div class="step-header">
+        <p>Step 4 — Email Verification</p>
+        <h2>Check your<br/>inbox.</h2>
+      </div>
+
+      <div class="verify-card">
+        <div class="verify-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1f7a43" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h3>Verify your email</h3>
+        <p>We've sent a 6-digit verification code to<br/><span class="email-highlight" id="verifyEmail">—</span><br/>Enter the code below to activate your account.</p>
+
+        <!-- DEMO hint -->
+        <div class="demo-otp-box" id="demoOtpBox">
+          <strong>🔔 Demo mode:</strong> Your OTP is <strong id="demoOtpDisplay">—</strong>
+        </div>
+
+        <div id="alertStep4" class="alert" style="text-align:left">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="alertMsgStep4"></span>
+        </div>
+
+        <div class="otp-row">
+          <input class="otp-input" type="text" maxlength="1" id="otp0" oninput="otpMove(0)" onkeydown="otpBack(event,0)"/>
+          <input class="otp-input" type="text" maxlength="1" id="otp1" oninput="otpMove(1)" onkeydown="otpBack(event,1)"/>
+          <input class="otp-input" type="text" maxlength="1" id="otp2" oninput="otpMove(2)" onkeydown="otpBack(event,2)"/>
+          <input class="otp-input" type="text" maxlength="1" id="otp3" oninput="otpMove(3)" onkeydown="otpBack(event,3)"/>
+          <input class="otp-input" type="text" maxlength="1" id="otp4" oninput="otpMove(4)" onkeydown="otpBack(event,4)"/>
+          <input class="otp-input" type="text" maxlength="1" id="otp5" oninput="otpMove(5)" onkeydown="otpBack(event,5)"/>
+        </div>
+
+        <button class="btn-primary" id="verifyBtn" onclick="handleVerify()" style="max-width:300px;margin:0 auto 20px;">
+          <span>Verify & Continue</span>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <div class="resend-row">
+          Didn't receive it? <button id="resendBtn" onclick="resendOtp()" disabled>Resend in <span id="resendTimer">60</span>s</button>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;text-align:center">
+        <button class="btn-secondary" onclick="goStep(3)" style="font-size:.82rem;padding:10px 18px">← Change email</button>
+      </div>
+    </div>
+
+    <!-- ─── STEP 5: SUCCESS ─── -->
+    <div class="step-panel" id="step5">
+      <div class="success-card">
+        <div class="success-anim">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Welcome to eMASID!</h3>
+        <p>Your account has been created and verified.<br/>You're now part of your community's digital watchdog network.<br/><br/>Start by reporting an issue or browsing what's happening in your barangay.</p>
+        <button class="btn-primary" onclick="window.location.href='login.html'" style="max-width:340px;margin:0 auto">
+          <span>Go to Login</span>
+          <span class="btn-arrow">→</span>
+        </button>
+        <div style="margin-top:16px;font-size:.8rem;color:#9ab5a2">You'll be redirected automatically in <span id="redirectTimer">5</span>s</div>
+      </div>
+    </div>
+
+  </div><!-- /form-scroll -->
+</div><!-- /right-panel -->
+
+<script>
+  /* ════════════════════════════════
+     STATE & STEP NAVIGATION
+  ════════════════════════════════ */
+  let currentStep = 1;
+  let generatedOtp = '';
+  let mapInstance = null;
+  let mapMarker = null;
+
+  const stepLabels = ['','Step 1 of 4','Step 2 of 4','Step 3 of 4','Step 4 of 4'];
+  const progressWidths = ['','25%','50%','75%','100%'];
+
+  function goStep(n) {
+    if (n > currentStep && !validateStep(currentStep)) return;
+    showStep(n);
+  }
+
+  function showStep(n) {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+
+    document.getElementById('stepLabel').textContent = n <= 4 ? stepLabels[n] : '';
+    document.getElementById('progressFill').style.width = n <= 4 ? progressWidths[n] : '100%';
+
+    // sidebar indicators
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('sd' + i);
+      const item = document.getElementById('sp' + i);
+      dot.classList.remove('active','done');
+      item.classList.remove('active');
+      if (i < n) { dot.classList.add('done'); dot.innerHTML = '✓'; }
+      else if (i === n) { dot.classList.add('active'); dot.textContent = i; item.classList.add('active'); }
+      else { dot.textContent = i; }
+    }
+    currentStep = n;
+
+    // init map when step 2 becomes active
+    if (n === 2 && !mapInstance) {
+      setTimeout(initMap, 100);
+    }
+  }
+
+  /* ════════════════════════════════
+     VALIDATION
+  ════════════════════════════════ */
+  function showAlert(stepNum, msg) {
+    const box = document.getElementById('alertStep' + stepNum);
+    const txt = document.getElementById('alertMsgStep' + stepNum);
+    txt.textContent = msg;
+    box.classList.add('show');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function clearAlert(stepNum) {
+    document.getElementById('alertStep' + stepNum).classList.remove('show');
+  }
+
+  function validateStep(n) {
+    clearAlert(n);
+    if (n === 1) {
+      const fn = document.getElementById('firstName').value.trim();
+      const ln = document.getElementById('lastName').value.trim();
+      const bd = document.getElementById('birthdate').value;
+      const gn = document.getElementById('gender').value;
+      if (!fn) { showAlert(1,'Please enter your given name.'); return false; }
+      if (!ln) { showAlert(1,'Please enter your last name.'); return false; }
+      if (!bd) { showAlert(1,'Please enter your date of birth.'); return false; }
+      if (!gn) { showAlert(1,'Please select your gender.'); return false; }
+      return true;
+    }
+    if (n === 2) {
+      const addr = document.getElementById('addressSearch').value.trim();
+      const brgy = document.getElementById('barangay').value.trim();
+      const city = document.getElementById('cityMuni').value.trim();
+      if (!addr) { showAlert(2,'Please search and select your address.'); return false; }
+      if (!brgy) { showAlert(2,'Please enter your barangay.'); return false; }
+      if (!city) { showAlert(2,'Please enter your city or municipality.'); return false; }
+      return true;
+    }
+    if (n === 3) {
+      const email = document.getElementById('emailAddr').value.trim();
+      const phone = document.getElementById('phoneNum').value.trim();
+      const pw1   = document.getElementById('password1').value;
+      const pw2   = document.getElementById('password2').value;
+      const terms = document.getElementById('agreeTerms').checked;
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlert(3,'Please enter a valid email address.'); return false; }
+      if (!phone || phone.length < 10) { showAlert(3,'Please enter a valid 10-digit Philippine mobile number.'); return false; }
+      if (pw1.length < 8) { showAlert(3,'Password must be at least 8 characters long.'); return false; }
+      if (pw1 !== pw2) { showAlert(3,'Passwords do not match. Please check and try again.'); return false; }
+      if (!terms) { showAlert(3,'Please agree to the Terms of Use and Privacy Policy to continue.'); return false; }
+      return true;
+    }
+    return true;
+  }
+
+  /* ════════════════════════════════
+     MAP — LEAFLET + NOMINATIM
+  ════════════════════════════════ */
+  function initMap() {
+    const defaultLat = 14.5995, defaultLng = 120.9842; // Manila
+    mapInstance = L.map('map').setView([defaultLat, defaultLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(mapInstance);
+
+    // custom gold pin icon
+    const pinIcon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:32px;height:32px;background:var(--green-deep);border:3px solid var(--gold);
+        border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+        box-shadow:0 4px 12px rgba(13,51,32,.4);
+      "></div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -36]
+    });
+
+    mapMarker = L.marker([defaultLat, defaultLng], { icon: pinIcon, draggable: true }).addTo(mapInstance);
+
+    mapMarker.on('dragend', function(e) {
+      const pos = e.target.getLatLng();
+      reverseGeocode(pos.lat, pos.lng);
+    });
+
+    mapInstance.on('click', function(e) {
+      mapMarker.setLatLng(e.latlng);
+      reverseGeocode(e.latlng.lat, e.latlng.lng);
+    });
+  }
+
+  let addressDebounce = null;
+  function onAddressInput() {
+    clearTimeout(addressDebounce);
+    const q = document.getElementById('addressSearch').value.trim();
+    if (q.length < 3) { hideSuggestions(); return; }
+    addressDebounce = setTimeout(() => searchAddress(q), 500);
+  }
+
+  async function searchAddress(query) {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ', Philippines')}&format=json&limit=5&addressdetails=1`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+      const data = await res.json();
+      showSuggestionsList(data);
+    } catch(e) { hideSuggestions(); }
+  }
+
+  function showSuggestionsList(results) {
+    const box = document.getElementById('addressSuggestions');
+    if (!results.length) { hideSuggestions(); return; }
+    box.innerHTML = '';
+    results.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'suggestion-item';
+      div.textContent = r.display_name;
+      div.onclick = () => selectAddress(r);
+      box.appendChild(div);
+    });
+    box.classList.add('show');
+  }
+
+  function selectAddress(result) {
+    document.getElementById('addressSearch').value = result.display_name;
+    hideSuggestions();
+    const lat = parseFloat(result.lat), lng = parseFloat(result.lon);
+    if (mapInstance && mapMarker) {
+      mapMarker.setLatLng([lat, lng]);
+      mapInstance.setView([lat, lng], 16);
+    }
+    // autofill fields
+    const addr = result.address || {};
+    if (addr.suburb || addr.village || addr.quarter) {
+      document.getElementById('barangay').value = addr.suburb || addr.village || addr.quarter || '';
+    }
+    if (addr.city || addr.town || addr.municipality) {
+      document.getElementById('cityMuni').value = addr.city || addr.town || addr.municipality || '';
+    }
+    if (addr.state || addr.province) {
+      document.getElementById('province').value = addr.state || addr.province || '';
+    }
+    if (addr.postcode) {
+      document.getElementById('zipCode').value = addr.postcode || '';
+    }
+  }
+
+  async function reverseGeocode(lat, lng) {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+      const data = await res.json();
+      if (data && data.display_name) {
+        document.getElementById('addressSearch').value = data.display_name;
+        selectAddress(data);
+        document.getElementById('addressSearch').value = data.display_name;
+      }
+    } catch(e) {}
+  }
+
+  function showSuggestions() {
+    const box = document.getElementById('addressSuggestions');
+    if (box.children.length) box.classList.add('show');
+  }
+  function hideSuggestions() {
+    document.getElementById('addressSuggestions').classList.remove('show');
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#addressSearch') && !e.target.closest('#addressSuggestions')) hideSuggestions();
+  });
+
+  /* ════════════════════════════════
+     PASSWORD STRENGTH
+  ════════════════════════════════ */
+  function checkStrength() {
+    const pw = document.getElementById('password1').value;
+    const fill = document.getElementById('pwFill');
+    const text = document.getElementById('pwText');
+    if (!pw) { fill.style.width = '0'; text.textContent = 'Enter a password'; text.style.color = '#9ab5a2'; return; }
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    const levels = [
+      { w:'20%', c:'#e05252', t:'Very weak' },
+      { w:'40%', c:'#e07a52', t:'Weak' },
+      { w:'60%', c:'#e8b94f', t:'Fair' },
+      { w:'80%', c:'#52a0e0', t:'Good' },
+      { w:'100%', c:'#16a34a', t:'Strong 💪' }
+    ];
+    const l = levels[Math.min(score, 4)];
+    fill.style.width = l.w; fill.style.background = l.c;
+    text.textContent = l.t; text.style.color = l.c;
+  }
+
+  function togglePw(inputId, iconId) {
+    const inp = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    const isPass = inp.type === 'password';
+    inp.type = isPass ? 'text' : 'password';
+    icon.innerHTML = isPass
+      ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`
+      : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  }
+
+  /* ════════════════════════════════
+     CREATE ACCOUNT → SEND OTP
+  ════════════════════════════════ */
+  function handleCreateAccount() {
+    if (!validateStep(3)) return;
+    const btn = document.getElementById('createAccBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+    setTimeout(() => {
+      btn.classList.remove('loading'); btn.disabled = false;
+      sendOtp();
+      showStep(4);
+    }, 1400);
+  }
+
+  function generateOtp() {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  let resendInterval = null;
+  function sendOtp() {
+    generatedOtp = generateOtp();
+    const email = document.getElementById('emailAddr').value.trim();
+    document.getElementById('verifyEmail').textContent = email;
+    document.getElementById('demoOtpDisplay').textContent = generatedOtp;
+    startResendTimer();
+  }
+
+  function startResendTimer() {
+    let secs = 60;
+    const btn = document.getElementById('resendBtn');
+    const timerSpan = document.getElementById('resendTimer');
+    btn.disabled = true;
+    timerSpan.textContent = secs;
+    clearInterval(resendInterval);
+    resendInterval = setInterval(() => {
+      secs--;
+      timerSpan.textContent = secs;
+      if (secs <= 0) {
+        clearInterval(resendInterval);
+        btn.disabled = false;
+        btn.textContent = 'Resend code';
+      }
+    }, 1000);
+  }
+
+  function resendOtp() {
+    generatedOtp = generateOtp();
+    document.getElementById('demoOtpDisplay').textContent = generatedOtp;
+    clearAlert(4);
+    for (let i = 0; i < 6; i++) {
+      const inp = document.getElementById('otp' + i);
+      inp.value = ''; inp.classList.remove('filled');
+    }
+    document.getElementById('otp0').focus();
+    startResendTimer();
+    const btn = document.getElementById('resendBtn');
+    btn.textContent = ''; // will be replaced by timer content
+    btn.innerHTML = 'Resend in <span id="resendTimer">60</span>s';
+  }
+
+  /* ════════════════════════════════
+     OTP INPUTS
+  ════════════════════════════════ */
+  function otpMove(i) {
+    const inp = document.getElementById('otp' + i);
+    const val = inp.value.replace(/\D/g,'');
+    inp.value = val;
+    if (val) {
+      inp.classList.add('filled');
+      if (i < 5) document.getElementById('otp' + (i+1)).focus();
+    } else {
+      inp.classList.remove('filled');
+    }
+  }
+  function otpBack(e, i) {
+    if (e.key === 'Backspace' && !document.getElementById('otp' + i).value && i > 0) {
+      document.getElementById('otp' + (i-1)).focus();
+    }
+  }
+  function getOtpValue() {
+    return Array.from({length:6}, (_,i) => document.getElementById('otp'+i).value).join('');
+  }
+
+  /* ════════════════════════════════
+     VERIFY OTP
+  ════════════════════════════════ */
+  function handleVerify() {
+    clearAlert(4);
+    const entered = getOtpValue();
+    if (entered.length < 6) { showAlert(4, 'Please enter all 6 digits of your verification code.'); return; }
+    const btn = document.getElementById('verifyBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+    setTimeout(() => {
+      btn.classList.remove('loading'); btn.disabled = false;
+      if (entered === generatedOtp) {
+        showStep(5);
+        startRedirectTimer();
+      } else {
+        showAlert(4, 'Incorrect code. Please check the code and try again.');
+        for (let i = 0; i < 6; i++) {
+          const inp = document.getElementById('otp' + i);
+          inp.value = ''; inp.classList.remove('filled');
+        }
+        document.getElementById('otp0').focus();
+      }
+    }, 1000);
+  }
+
+  function startRedirectTimer() {
+    let s = 5;
+    const span = document.getElementById('redirectTimer');
+    const iv = setInterval(() => {
+      s--;
+      span.textContent = s;
+      if (s <= 0) { clearInterval(iv); /* window.location.href = 'login.html'; */ }
+    }, 1000);
+  }
+
+</script>
+</body>
+</html>

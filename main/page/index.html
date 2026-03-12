@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="./assets/logo/logo.png">
+    <title>eMASID</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous" />
+
+    <!-- css -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/content.css">
+
+    <!-- js -->
+    <script src="../js/main.js" defer></script>
+    <script src="../js/search.js" defer></script>
+    <!-- leaflet js -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <!-- Report Button -->
+    <button class="report-btn">＋ Report an Issue</button>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="webname">
+            <div class="logo">
+                <img src="../assets/logo/logo.png" alt="logo">
+            </div>
+            <h2>eMASID</h2>
+        </div>
+
+        <div class="user">
+            <div class="user-role">
+                <span class="username">Isaiah Christian Ersolada</span>
+                <span class="role">Resident</span>
+            </div>
+            <div class="profile">
+                <!-- <img src="./assets/profile.png" alt="profile"> -->
+                <img src="../assets/user/unregister-user.png" alt="unregister-user">
+            </div>
+        </div>
+    </nav>
+
+    <!-- main content -->
+    <main>
+        <section class="left-content">
+            <!-- filters -->
+            <div class="filterbar">
+                <div class="search" id="searchBar">
+                    <span><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input id="userSearch" type="text" placeholder="Search Reports...">
+                </div>
+
+                <div class="dropdown-f">
+                    <div class="status-f">
+                        <select name="status" id="status-filter">
+                            <option value="">Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="priority-f">
+                        <select name="priority" id="priority-filter">
+                            <option value="">Priority</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- user posts -->
+            <div class="content-container">
+                
+                <!-- Users -->
+                <div class="user-report">
+                    <!-- Top Post -->
+                    <div class="user-post">
+                        <div class="user-profile">
+                            <div class="user-dp">
+                                <img src="../assets/user/unregister-user.png" alt="User Profile">
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">John Doe</div>
+                                <div class="loc-hr">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    San Luis, Antipolo City · 1w ago
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="badges">
+                            <div class="badge status">Open</div>
+                            <div class="badge category">Road</div>
+                            <div class="badge priority">High</div>
+                        </div>
+                    </div>
+                    <!-- Middle Post -->
+                    <div class="report">
+                        <h2 class="report-title">Report Title</h2>
+                        <p class="report-desc">
+                            Lorem ipsum dolor sit amet consectetur  Lorem ipsum dolor sit amet consectetur, adipisicing elit. Perferendis, debitis explicabo esse enim quis facere laudantium, praesentium consectetur aspernatur doloribus iste earum quasi ipsam eum ducimus consequatur cumque aperiam ea! Lorem ipsum dolor sit amet consectetur, adipisicing elit. Enim accusantium fugit ullam sapiente architecto esse inventore id, perferen
+                        </p>
+                        <div class="report-image">
+                            <img src="../assets/issue/photo-1515162816999-a0c47dc192f7.jfif" alt="Report Image">
+                            <img src="../assets/issue/photo-1515162816999-a0c47dc192f7.jfif" alt="Report Image">
+                        </div>
+                    </div>
+                    <!-- Bottom Post -->
+                    <div class="action">
+                        <!-- <button class="vote"> -->
+                        <button class="voted">
+                            <!-- ▲ <span class="vote-count" id="vote-count-2">8</span>
+                            UpVote -->
+                            ▲ <span class="vote-count" id="vote-count-2">8</span>
+                            UpVoted
+                        </button>
+                        <button class="view">View Map</button>
+                    </div>
+                </div>
+                              
+                <div class="user-report">
+                    <!-- Top Post -->
+                    <div class="user-post">
+                        <div class="user-profile">
+                            <div class="user-dp">
+                                <img src="../assets/user/unregister-user.png" alt="User Profile">
+                            </div>
+                            <div class="user-info">
+                                <div class="user-name">John Doe</div>
+                                <div class="loc-hr">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    San Luis, Antipolo City · 1w ago
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="badges">
+                            <div class="badge status">Open</div>
+                            <div class="badge category">Road</div>
+                            <div class="badge priority">High</div>
+                        </div>
+                    </div>
+                    <!-- Middle Post -->
+                    <div class="report">
+                        <h2 class="report-title">Report Title</h2>
+                        <p class="report-desc">
+                            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Cupiditate neque aperiam suscipit totam provident beatae autem laudantium a minus, esse obcaecati eius accusantium pariatur! Labore quidem numquam veritatis accusantium sed.lorem
+                        </p>
+                        <div class="report-image">
+                            <img src="../assets/issue/photo-1515162816999-a0c47dc192f7.jfif" alt="Report Image">
+                            <img src="../assets/issue/photo-1515162816999-a0c47dc192f7.jfif" alt="Report Image">
+                        </div>
+                    </div>
+                    <!-- Bottom Post -->
+                    <div class="action">
+                        <button class="vote">
+                            ▲ <span class="vote-count" id="vote-count-2">8</span>
+                            UpVote
+                        </button>
+                        <button class="view">View Map</button>
+                    </div>
+                </div>               
+            </div>
+        </section>
+        
+        <section class="right-content">
+            <div class="map-card">
+                <div class="map-head">
+                    <span class="map-head-t">
+                        <i class="fa-regular fa-map"></i> San Luis, Antipolo City
+                    </span>
+                    <span class="map-head-c" id="pin-count">0 pins</span>
+                </div>
+                <div id="main-map"></div>
+            </div>
+
+            <div class="emergency-contact-container">
+                <div class="container-name">📞 Emergency Contacts</div>
+                <div class="contacts">
+                    <div class="information">
+                        <div class="icon">
+                            <!-- <img src="" alt=""> -->
+                            <span>🚒</span>
+                        </div>
+                        <div class="name-num">
+                            <span>PNP Antipolo</span>
+                            <span>(02) 8999-0000</span>
+                        </div>
+                    </div>
+                    <div class="call-btn">Call</div>
+                </div>
+                <div class="contacts">
+                    <div class="information">
+                        <div class="icon">
+                            <!-- <img src="" alt=""> -->
+                            <span>🚒</span>
+                        </div>
+                        <div class="name-num">
+                            <span>PNP Antipolo</span>
+                            <span>(02) 8999-0000</span>
+                        </div>
+                    </div>
+                    <div class="call-btn">Call</div>
+                </div>
+                <div class="contacts">
+                    <div class="information">
+                        <div class="icon">
+                            <!-- <img src="" alt=""> -->
+                            <span>🚒</span>
+                        </div>
+                        <div class="name-num">
+                            <span>PNP Antipolo</span>
+                            <span>(02) 8999-0000</span>
+                        </div>
+                    </div>
+                    <div class="call-btn">Call</div>
+                </div>
+                <div class="contacts">
+                    <div class="information">
+                        <div class="icon">
+                            <!-- <img src="" alt=""> -->
+                            <span>🚒</span>
+                        </div>
+                        <div class="name-num">
+                            <span>PNP Antipolo</span>
+                            <span>(02) 8999-0000</span>
+                        </div>
+                    </div>
+                    <div class="call-btn">Call</div>
+                </div>
+                <div class="container-footer">eMASID · San Luis, Antipolo City</div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

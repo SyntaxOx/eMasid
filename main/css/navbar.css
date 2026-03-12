@@ -1,0 +1,61 @@
+nav {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    background-color: var(--green);
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+    color: white;
+    font-family:'Nunito', sans-serif;
+    user-select: none;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.webname, .user {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.user .user-role {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: end;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.user .user-role .role {
+    font-size: 12px;
+    color: rgba(255,255,255,.6);
+    font-weight: 500;
+}
+
+.user .profile, .webname .logo {
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    background-color: transparent;
+}
+
+.user .profile img, .webname .logo img {
+    width: 100%;
+}
+
+.user .profile {
+    width: 40px;
+    height: 40px;
+    padding: 3px;
+    pointer-events: auto;
+}
+
+.user .profile:hover {
+    background-color: var(--green-mid);
+}
