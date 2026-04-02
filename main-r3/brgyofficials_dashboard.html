@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Barangay Officials - Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400&display=swap" rel="stylesheet"/>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brgy-dark': '#0a2e1f',
+                        'brgy-beige': '#f9f6f0',
+                        'brgy-accent': '#eab308',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f9f6f0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .serif-header { font-family: 'Playfair Display', serif; }
+        .table-container { height: calc(100vh - 300px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        #chatPopup { transition: all 0.3s ease; transform: translateY(110%); opacity: 0; pointer-events: none; z-index: 100; }
+        #chatPopup.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
+        
+        .message-bubble { word-wrap: break-word; max-width: 85%; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden text-gray-800">
+
+    <aside class="w-64 bg-brgy-dark text-white flex flex-col h-full flex-shrink-0 shadow-2xl">
+        <div class="p-8 text-center border-b border-white/10">
+            <h1 class="serif-header text-xl uppercase tracking-widest text-white">Barangay Officials</h1>
+        </div>
+        <nav class="flex-grow p-4 space-y-2">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-white text-brgy-dark rounded-xl font-bold shadow-md">
+                <span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl text-gray-300 transition-all">
+                <span class="material-symbols-outlined">assignment</span> Manage Concerns
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl text-gray-300 transition-all">
+                <span class="material-symbols-outlined">notifications</span> Update Status
+            </a>
+        </nav>
+        <div class="p-6 border-t border-white/5">
+            <button onclick="handleLogout()" class="w-full bg-brgy-accent hover:bg-yellow-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all">Logout</button>
+        </div>
+    </aside>
+
+    <main class="flex-grow flex flex-col p-10 gap-8 overflow-hidden relative">
+        
+        <header class="flex-shrink-0">
+            <h2 class="serif-header text-4xl font-bold text-gray-800 uppercase tracking-tight">BARANGAY OFFICIALS</h2>
+            <p class="text-gray-500 text-sm mt-1 italic">Real-time status of barangay reports and residents' concerns</p>
+        </header>
+
+        <section class="grid grid-cols-4 gap-6 flex-shrink-0">
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100"><p class="text-[10px] font-bold text-gray-400 uppercase">Total Reports</p><p class="text-3xl font-bold serif-header mt-1">1,284</p></div>
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 text-red-500"><p class="text-[10px] font-bold text-gray-400 uppercase">Pending</p><p class="text-3xl font-bold serif-header mt-1">42</p></div>
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 text-orange-400"><p class="text-[10px] font-bold text-gray-400 uppercase">In-Progress</p><p class="text-3xl font-bold serif-header mt-1">15</p></div>
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 text-green-600"><p class="text-[10px] font-bold text-gray-400 uppercase">Resolved</p><p class="text-3xl font-bold serif-header mt-1">1,223</p></div>
+        </section>
+
+        <div class="flex gap-8 flex-grow overflow-hidden">
+            
+            <div class="flex-grow bg-white rounded-[2rem] shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+                
+                <div class="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+                    <h3 class="font-bold text-gray-700 text-lg uppercase tracking-tight">Latest Reports</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="searchInput" placeholder="Search resident..." 
+                               class="text-sm border-gray-200 rounded-xl px-4 py-2 w-60 focus:ring-brgy-dark focus:border-brgy-dark shadow-sm">
+                        <select id="typeFilter" class="text-sm border-gray-200 rounded-xl px-4 py-2 focus:ring-brgy-dark shadow-sm">
+                            <option value="">All Concerns</option>
+                            <option value="Waste Management">Waste Management</option>
+                            <option value="Street Lights">Street Lights</option>
+                            <option value="Noise complaint">Noise complaint</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto table-container no-scrollbar">
+                    <table id="reportsTable" class="w-full text-left">
+                        <thead class="sticky top-0 bg-white z-10 border-b border-gray-100 shadow-sm">
+                            <tr class="text-gray-400 text-[11px] font-bold uppercase tracking-widest">
+                                <th class="p-5">ID No.</th> <th class="p-5">Resident</th>
+                                <th class="p-5">Concern Type</th>
+                                <th class="p-5 text-center">Status</th>
+                                <th class="p-5">Date</th>
+                                <th class="p-5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-50">
+                            <tr class="hover:bg-gray-50 transition-all">
+                                <td class="p-5 text-xs font-mono text-gray-400">#2026-0001</td> <td class="p-5 font-semibold text-gray-700">Juan Dela Cruz</td>
+                                <td class="p-5 text-gray-600">Waste Management</td>
+                                <td class="p-5 text-center">
+                                    <select onchange="updateStatus(this)" class="bg-orange-100 text-orange-700 text-[10px] font-bold py-1.5 px-4 rounded-full border-none focus:ring-0 uppercase cursor-pointer">
+                                        <option selected>Pending</option>
+                                        <option>In-Progress</option>
+                                        <option>Resolved</option>
+                                    </select>
+                                </td>
+                                <td class="p-5 text-gray-400 text-xs">Jan 24, 2026</td>
+                                <td class="p-5 text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <button onclick="toggleChat('Juan Dela Cruz')" class="p-2.5 bg-gray-50 hover:bg-brgy-dark hover:text-white rounded-xl transition-all border border-gray-100" title="Message">
+                                            <span class="material-symbols-outlined text-lg">chat</span>
+                                        </button>
+                                        <button onclick="banUser(this, 'Juan Dela Cruz')" class="p-2.5 bg-red-50 hover:bg-red-600 hover:text-white text-red-600 rounded-xl transition-all border border-red-100" title="Ban">
+                                            <span class="material-symbols-outlined text-lg">block</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="w-80 bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 flex flex-col flex-shrink-0 h-full items-center">
+                <h3 class="font-bold text-gray-800 text-sm mb-10 uppercase tracking-widest self-start">Concern Analysis</h3>
+                <div class="w-40 h-40 rounded-full border-[15px] border-slate-700 flex items-center justify-center relative mb-12 shadow-inner">
+                    <span class="serif-header text-4xl font-bold text-gray-700">75%</span>
+                </div>
+                <div class="w-full space-y-6">
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-[11px] font-bold uppercase"><span class="text-yellow-600">Waste Management</span><span>50%</span></div>
+                        <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden"><div class="bg-yellow-500 h-full w-1/2"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatPopup" class="fixed bottom-8 right-8 w-80 bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+            <div class="bg-brgy-dark p-4 text-white flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    <span id="chatTargetName" class="font-bold text-sm">Resident Name</span>
+                </div>
+                <button onclick="toggleChat()" class="hover:bg-white/10 p-1.5 rounded-xl transition-all"><span class="material-symbols-outlined text-sm">close</span></button>
+            </div>
+            
+            <div class="h-80 p-5 overflow-y-auto bg-gray-50/50 flex flex-col gap-4 no-scrollbar" id="chatBox">
+                <div class="bg-white p-3 rounded-2xl rounded-bl-none shadow-sm text-xs self-start message-bubble border border-gray-100">
+                    Hello! I would like to report something.
+                </div>
+            </div>
+
+            <form onsubmit="sendMessage(event)" class="p-4 bg-white border-t border-gray-100 flex gap-2">
+                <input type="text" id="chatInput" placeholder="Write a message..." class="flex-grow text-xs border-gray-100 rounded-xl focus:ring-brgy-dark p-3">
+                <button type="submit" class="bg-brgy-dark text-white p-3 rounded-xl hover:bg-black transition-all">
+                    <span class="material-symbols-outlined text-sm">send</span>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function toggleChat(name = "") {
+            const popup = document.getElementById('chatPopup');
+            if (name) {
+                document.getElementById('chatTargetName').innerText = "Chat with " + name;
+                popup.classList.add('active');
+            } else {
+                popup.classList.remove('active');
+            }
+        }
+
+        function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const chatBox = document.getElementById('chatBox');
+            if (!input.value.trim()) return;
+
+            const msg = document.createElement('div');
+            msg.className = "bg-brgy-dark text-white p-3 rounded-2xl rounded-br-none shadow-sm text-xs self-end message-bubble";
+            msg.innerText = input.value;
+            chatBox.appendChild(msg);
+
+            input.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        const sInput = document.getElementById('searchInput');
+        const tFilter = document.getElementById('typeFilter');
+        const rows = document.querySelectorAll('#reportsTable tbody tr');
+
+        function filter() {
+            const q = sInput.value.toLowerCase();
+            const f = tFilter.value.toLowerCase();
+            rows.forEach(r => {
+                const name = r.cells[1].innerText.toLowerCase(); // Updated cell index for name
+                const type = r.cells[2].innerText.toLowerCase(); // Updated cell index for type
+                r.style.display = (name.includes(q) && (f === "" || type === f)) ? "" : "none";
+            });
+        }
+        sInput.addEventListener('input', filter);
+        tFilter.addEventListener('change', filter);
+
+        function updateStatus(select) {
+            const val = select.value;
+            select.className = "text-[10px] font-bold py-1.5 px-4 rounded-full border-none focus:ring-0 uppercase cursor-pointer ";
+            if(val === 'Pending') select.classList.add('bg-orange-100', 'text-orange-700');
+            else if(val === 'In-Progress') select.classList.add('bg-blue-100', 'text-blue-700');
+            else if(val === 'Resolved') select.classList.add('bg-green-100', 'text-green-700');
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Status updated', showConfirmButton: false, timer: 1500 });
+        }
+
+        function banUser(btn, name) {
+            Swal.fire({
+                title: 'Ban Resident?',
+                text: `Restrict ${name} from posting?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, Ban'
+            }).then((r) => {
+                if (r.isConfirmed) {
+                    btn.closest('tr').classList.add('opacity-30', 'pointer-events-none');
+                    Swal.fire('Restricted!', '', 'success');
+                }
+            });
+        }
+
+        function handleLogout() {
+            Swal.fire({ title: 'Logout?', icon: 'question', showCancelButton: true, confirmButtonColor: '#eab308' })
+                .then(r => { if(r.isConfirmed) window.location.reload(); });
+        }
+    </script>
+</body>
+</html>
